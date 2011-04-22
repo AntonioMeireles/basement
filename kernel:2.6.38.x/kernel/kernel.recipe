@@ -1,0 +1,137 @@
+#
+# Copyright (c) 2005-2009 rPath, Inc.
+#               2008-2011 Foresight Linux Project
+# This file is distributed under the terms of the MIT License.
+# A copy is available at http://www.rpath.com/permanent/mit-license.html
+#
+
+loadInstalled('open-vm-tools')
+loadSuperClass('kernelpackage')
+class Kernel(KernelPackageRecipe):
+
+    name = 'kernel'
+    version = '2.6.38.2'
+    longterm = False
+
+    def unpack(r):        
+	# r.addPatch('git-linus.diff') 
+        r.addPatch('linux-2.6-makefile-after_link.patch') 
+        # r.addPatch('linux-2.6-compile-fixes.patch') 
+        # r.addPatch('linux-2.6-upstream-reverts.patch', extraArgs='-R') 
+
+        r.addPatch('linux-2.6-hotfixes.patch')
+        r.addPatch('linux-2.6-utrace-revert-make-ptrace-functions-static.patch')
+        r.addPatch('linux-2.6-tracehook.patch')
+        r.addPatch('linux-2.6-utrace.patch')
+        r.addPatch('linux-2.6-utrace-ptrace.patch')
+        r.addPatch('linux-2.6-x86-fix-mtrr-resume.patch')
+        r.addPatch('linux-2.6.29-sparc-IOC_TYPECHECK.patch')
+        r.addPatch('sparc64_fix_build_errors_with_gcc460.patch')
+        r.addPatch('linux-2.6-i386-nx-emulation.patch')
+        r.addPatch('linux-2.6-32bit-mmap-exec-randomization.patch')
+        r.addPatch('linux-2.6-defaults-acpi-video.patch')
+        r.addPatch('linux-2.6-acpi-video-dos.patch')
+        r.addPatch('acpi-ec-add-delay-before-write.patch')
+        r.addPatch('linux-2.6-acpi-debug-infinite-loop.patch')
+        r.addPatch('acpi_battery-fribble-sysfs-files-from-a-resume-notifier.patch')
+        r.addPatch('linux-2.6-debug-sizeof-structs.patch')
+        r.addPatch('linux-2.6-debug-taint-vm.patch')
+        r.addPatch('linux-2.6-debug-vm-would-have-oomkilled.patch')
+        r.addPatch('linux-2.6-debug-always-inline-kzalloc.patch')
+        r.addPatch('linux-2.6-defaults-pci_no_msi.patch')
+        r.addPatch('linux-2.6-defaults-pci_use_crs.patch')
+        r.addPatch('linux-2.6-defaults-aspm.patch')
+        r.addPatch('pci-acpi-report-aspm-support-to-bios-if-not-disabled-from-command-line.patch')
+        r.addPatch('pci-pcie-links-may-not-get-configured-for-aspm-under-powersave-mode.patch')
+        r.addPatch('hda_intel-prealloc-4mb-dmabuffer.patch')
+        r.addPatch('linux-2.6-input-kill-stupid-messages.patch')
+        r.addPatch('die-floppy-die.patch')
+        r.addPatch('linux-2.6.30-no-pcspkr-modalias.patch')
+        r.addPatch('linux-2.6-serial-460800.patch')
+        r.addPatch('linux-2.6-silence-noise.patch')
+        r.addPatch('linux-2.6-silence-fbcon-logo.patch')
+        r.addPatch('linux-2.6-crash-driver.patch')
+        r.addPatch('linux-2.6-e1000-ich9-montevina.patch')
+        r.addPatch('fix_xen_guest_on_old_EC2.patch')
+        r.addPatch('drm-ttm-move-notify.patch')
+        r.addPatch('drm-nouveau-fixes.patch')
+        r.addPatch('drm-nouveau-updates.patch')
+        # r.addPatch('drm-intel-next.patch')
+        r.addPatch('drm-intel-big-hammer.patch')
+        r.addPatch('drm-intel-make-lvds-work.patch')
+        r.addPatch('linux-2.6-intel-iommu-igfx.patch')
+        r.addPatch('drm-intel-edp-fixes.patch')
+        r.addPatch('drm-i915-fix-pipelined-fencing.patch')
+        r.addPatch('drm-intel-eeebox-eb1007-quirk.patch')
+        r.addPatch('linux-2.6-silence-acpi-blacklist.patch')
+        r.addPatch('linux-2.6-v4l-dvb-fixes.patch')
+        r.addPatch('linux-2.6-v4l-dvb-update.patch')
+        r.addPatch('linux-2.6-v4l-dvb-experimental.patch')
+        r.addPatch('flexcop-fix-xlate_proc_name-warning.patch')
+        r.addPatch('perf-gcc460-build-fixes.patch')
+        r.addPatch('disable-i8042-check-on-apple-mac.patch')
+        r.addPatch('add-appleir-usb-driver.patch')
+        r.addPatch('neuter_intel_microcode_load.patch')
+        r.addPatch('apple_backlight.patch')
+        r.addPatch('efifb_update.patch')
+        r.addPatch('acpi_reboot.patch')
+        r.addPatch('dmar-disable-when-ricoh-multifunction.patch')
+        r.addPatch('printk-do-not-mangle-valid-userspace-syslog-prefixes.patch')
+        r.addPatch('scsi-sd-downgrade-caching-printk-from-error-to-notice.patch')
+        
+        # VMware support
+        r.macros.ovmtoolsver = OpenVmTools.version.replace('_', '-')
+        # sf mirror network unreliable:/ 
+        #r.addArchive('mirror://sourceforge/open-vm-tools/'
+        r.addArchive('http://downloads.sourceforge.net/open-vm-tools/'
+                     'open-vm-tools-%(ovmtoolsver)s.tar.gz',
+                     dir='linux-%(version)s')
+
+        # Add the cp437 version of the terminus font to the kernel and 
+        # keep a backup of the original font for comparison purposes. 
+        # -- /ermo
+        r.addSource('terminus_font_8x16.c', dest = 'drivers/video/console/')
+        r.Copy('drivers/video/console/font_8x16.c', 'drivers/video/console/font_8x16.c.org')
+        # Comment out the line below to keep original VGA font.
+        r.Copy('drivers/video/console/terminus_font_8x16.c', 'drivers/video/console/font_8x16.c')
+
+    def addConfiguration(r):
+        r.addSource('kernel-foresight-i686.config', dest = 'configs/', use=Arch.x86)
+        r.addSource('kernel-foresight-x86_64.config', dest = 'configs/', use=Arch.x86_64)
+            
+        if Arch.x86:
+            r.macros.cfgver = '.smp.gcc4.4.x86.i686'
+            r.Copy('configs/kernel-foresight-i686.config', '.config')
+        elif Arch.x86_64:
+            r.macros.cfgver = '.smp.gcc4.4.x86_64'
+            r.Copy('configs/kernel-foresight-x86_64.config', '.config')
+
+    def buildAtaModuleMap(r):
+        pass
+
+    def build(r):
+        # Build VMware kernel modules
+        r.macros.kmoddir = '/lib/modules/%(kver)s/kernel/'
+
+        for m in ('drivers/misc/vmci',
+                  'drivers/misc/vmsync',
+                  'drivers/net/vmxnet',
+                  'drivers/net/vsock',
+                  'fs/vmblock',
+                  'fs/vmhgfs'):
+            module = os.path.basename(m)
+            modsrc = 'open-vm-tools-%(ovmtoolsver)s/modules/linux/' + module + '/'
+            r.Run('make -C %(builddir)s SUBDIRS=$PWD SRCROOT=$PWD/.'
+                  ' MODULEBUILDDIR=%(builddir)s/open-vm-tools-%(ovmtoolsver)s/modules/linux'
+                  ' OVT_SOURCE_DIR=%(builddir)s/open-vm-tools-%(ovmtoolsver)s',
+                  ' VM_KBUILD=26 '
+                  ' CC_OPTS=-DVMW_HAVE_EPOLL'
+                  ' modules',
+                  dir=modsrc)
+
+            kmod = module + '.ko'
+            r.Install(modsrc + kmod, '%(kmoddir)s' + m + '/' + kmod)
+
+    def policy(r):
+        # rm cruft
+        r.Remove('/lib/modules/%(kver)s/source/open-vm-tools-%(ovmtoolsver)s/', recursive = True)
