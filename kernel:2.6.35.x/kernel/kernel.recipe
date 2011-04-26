@@ -1,0 +1,19 @@
+#
+# Copyright (c) 2005-2009 rPath, Inc.
+#               2008-2011 Foresight Linux Project
+# This file is distributed under the terms of the MIT License.
+# A copy is available at http://www.rpath.com/permanent/mit-license.html
+#
+
+class Kernel(AutoPackageRecipe):
+    name = 'kernel'
+    version = '2.6.35.99'
+    longterm = False
+
+
+    def setup(r):
+        r.Create('%(datadir)s/foo/%(name)s)/foo1',
+                 contents = 'foo', mode = 0644)
+        r.addSource('foo')
+        r.Install('foo', '%(datadir)s/foo/%(name)s/', mode = 0644)
+    
