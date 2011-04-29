@@ -11,12 +11,8 @@ from conary.build import source
 from conary.build import lookaside
 from conary.build.source import SourceError
 
-try:
-    log.info(' _____ ______ ____ ' % FOOBAR)
-except: 
-    pass
-
-class Kernel(AutoPackageRecipe,GitHubBridgePackageRecipe):
+loadSuperClass('githubpackage')
+class Kernel(GitHubPackageRecipe,AutoPackageRecipe):
     name = 'kernel'
     version = '2.6.35.99'
     longterm = False
