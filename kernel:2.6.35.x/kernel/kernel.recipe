@@ -22,9 +22,9 @@ class Kernel(GitHubPackageRecipe,AutoPackageRecipe):
         r.Create('%(datadir)s/foo/%(name)s)/foo1',
                  contents = 'foo', mode = 0644)
         r.addSource('foo')
-        r.addSource('kernel.spec', rpm='kernel-2.6.35.12-90.fc14.src.rpm')
+#        r.addSource('kernel.spec', rpm='kernel-2.6.35.12-90.fc14.src.rpm')
         r.addSource('https://github.com/AntonioMeireles/basement/blob/master/README')
         r.Install('foo', '%(datadir)s/foo/%(name)s/', mode = 0644)
         r.Install('README', '%(datadir)s/foo/%(name)s/', mode = 0644)
-        r.Install('kernel.spec', '%(datadir)s/foo/%(name)s/', mode = 0644)
+#        r.Install('kernel.spec', '%(datadir)s/foo/%(name)s/', mode = 0644)
 
