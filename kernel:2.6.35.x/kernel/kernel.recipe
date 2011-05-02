@@ -4,16 +4,7 @@
 # This file is distributed under the terms of the MIT License.
 # A copy is available at http://www.rpath.com/permanent/mit-license.html
 #
-
-import errno
-from conary.lib import log
-from conary.build import source
-from conary.build import lookaside
-from conary.build.source import SourceError
-
-
-loadSuperClass('githubpackage')
-class Kernel(GitHubPackageRecipe,AutoPackageRecipe):
+class Kernel(AutoPackageRecipe):
     name = 'kernel'
     version = '2.6.35.99'
     longterm = False
@@ -23,11 +14,13 @@ class Kernel(GitHubPackageRecipe,AutoPackageRecipe):
         r.Create('%(datadir)s/foo/%(name)s)/foo1',
                  contents = 'foo', mode = 0644)
         r.addSource('foo')
-        r.addSource('kernel.spec', rpm='kernel-2.6.35.12-90.fc14.src.rpm')
+
         r.addSource('https://github.com/AntonioMeireles/basement/blob/master/README')
         r.Install('foo', '%(datadir)s/foo/%(name)s/', mode = 0644)
         r.Install('README', '%(datadir)s/foo/%(name)s/', mode = 0644)
-        r.Install('kernel.spec', '%(datadir)s/foo/%(name)s/', mode = 0644)
+
+#        r.addSource('kernel.spec', rpm='kernel-2.6.35.12-90.fc14.src.rpm')
+#        r.Install('kernel.spec', '%(datadir)s/foo/%(name)s/', mode = 0644)
 
         
     
