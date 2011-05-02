@@ -12,11 +12,11 @@ class Kernel(AutoPackageRecipe):
 
     def setup(r):
         r.Create('%(datadir)s/foo/%(name)s)/foo1',
-                 contents = 'foo', mode = 0644)
-        r.addSource('foo')
+                 contents = 'xxxxx xxxx xxxx xxxx xxxx', mode = 0644)
+        r.addSource('foo_')
 
         r.addSource('https://github.com/AntonioMeireles/basement/blob/master/README')
-        r.Install('foo', '%(datadir)s/foo/%(name)s/', mode = 0644)
+        r.Install('foo_', '%(datadir)s/foo/%(name)s/', mode = 0644)
         r.Install('README', '%(datadir)s/foo/%(name)s/', mode = 0644)
 
 #        r.addSource('kernel.spec', rpm='kernel-2.6.35.12-90.fc14.src.rpm')
