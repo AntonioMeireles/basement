@@ -21,8 +21,8 @@ class Kernel(AutoPackageRecipe):
         r.Install('foo_2', '%(datadir)s/foo/%(name)s/', mode = 0644)
         r.Install('README', '%(datadir)s/foo/%(name)s/', mode = 0644)
 
-#        r.addSource('kernel.spec', rpm='kernel-2.6.35.12-90.fc14.src.rpm')
-#        r.Install('kernel.spec', '%(datadir)s/foo/%(name)s/', mode = 0644)
+        r.addSource('kernel.spec', rpm='kernel-2.6.35.12-90.fc14.src.rpm')
+        r.Install('kernel.spec', '%(datadir)s/foo/%(name)s/', mode = 0644)
 
         
     
