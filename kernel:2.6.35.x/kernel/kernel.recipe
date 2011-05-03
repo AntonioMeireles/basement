@@ -22,7 +22,9 @@ class Kernel(AutoPackageRecipe):
         r.Install('README', '%(datadir)s/foo/%(name)s/', mode = 0644)
 
         r.addSource('kernel.spec', rpm='kernel-2.6.35.12-90.fc14.src.rpm')
+        r.addSource('merge.pl', rpm='kernel-2.6.35.12-90.fc14.src.rpm')
         r.Install('kernel.spec', '%(datadir)s/foo/%(name)s/', mode = 0644)
+        r.Install('merge.pl', '%(datadir)s/foo/%(name)s/', mode = 0644)
 
         
     
