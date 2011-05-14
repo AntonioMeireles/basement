@@ -1,0 +1,143 @@
+diff -r 6169c14a91a3 conary/build/recipe.py
+--- a/conary/build/recipe.py	Fri May 13 11:27:14 2011 -0400
++++ b/conary/build/recipe.py	Fri May 13 21:12:15 2011 +0100
+@@ -110,6 +110,7 @@
+     _recipeType = RECIPE_TYPE_UNKNOWN
+     _isDerived = False
+     _sourceModule = None
++    isExternallyManaged = {}
+     COOK_TYPE_LOCAL = 0
+     COOK_TYPE_REPOSITORY = 1
+ 
+@@ -162,7 +163,10 @@
+         self.cookType = self.COOK_TYPE_LOCAL
+ 
+         superClasses = self.__class__.__mro__
+-
++        
++        if len(self.isExternallyManaged) > 0: 
++            log.info('\n:source being pushed from github throu a factory\n')
++            
+         for itemName in dir(self):
+             if itemName[0] == '_':
+                 continue
+@@ -209,7 +213,7 @@
+         self._logFile = None
+         self._isCrossCompileTool = False
+         self._isCrossCompiling = False
+-
++            
+     def _getParentClass(self, className):
+         klass = self.__class__
+         while klass.__name__ != className:
+diff -r 6169c14a91a3 conary/build/source.py
+--- a/conary/build/source.py	Fri May 13 11:27:14 2011 -0400
++++ b/conary/build/source.py	Fri May 13 21:12:15 2011 +0100
+@@ -252,6 +252,13 @@
+     def doPrep(self):
+         if self.debug:
+             debugger.set_trace()
++        # if localSources are coming via a factory we download them all
++        # regardless of them being used or not.
++        # this fixes cvc refresh when an scm factory is in use
++        log.info('\n')
++        log.info('sourceName = %s, [use = %s]', self.sourcename, self.use)
++        log.info('len = %s', len(self.recipe.isExternallyManaged))
++        log.info('\n')
++        if self.use or len(self.recipe.isExternallyManaged) != 0:
+-        if self.use:
+             if self.linenum is None:
+                 self._doPrep()
+@@ -265,7 +273,91 @@
+ 
+     def _doPrep(self):
+         if self.rpm:
+-            self._extractFromRPM()
++            if len(self.recipe.isExternallyManaged) and self.recipe.isExternallyManaged.has_key(self.rpm):
++                self._extractFromSCM()
++            else:
++                self._extractFromRPM()
++        else:
++            if len(self.recipe.isExternallyManaged) and self.recipe.isExternallyManaged.has_key(self.sourcename):
++                self._extractFromSCM()
++
++
++    def _extractFromSCM(self):
++        """
++        Extracts 'local' filename from SCM (passed by a factory) 
++        and creates an entry in the source lookaside cache for
++        the extracted file. We follow the exact same scheme as
++        the one introduced in CNY-2627 that handles files stored
++        in RPMs
++        """
++        prefix = self.recipe.name 
++        prefix = os.path.normpath(prefix)
++
++        if self.rpm: 
++            rpm_loc = os.path.sep.join(('=SCM_CONTENTS=', prefix))
++            rpm_loc = os.path.normpath(rpm_loc)
++            rpm_c = self.recipe.laReposCache.getCachePath(rpm_loc, self.rpm)
++            util.mkdirChain(os.path.dirname(rpm_c))
++            rpm_sourcename = os.path.sep.join((prefix, self.rpm))
++            if self.recipe.isExternallyManaged.has_key(self.rpm):
++                rpm_gitLoc = self.recipe.isExternallyManaged[self.rpm]
++            else:
++                raise SourceError("this should be impossible,"
++                                  "given that we are using a factory "
++                                  "that pulls stuff from an scm."
++                                  "'%s' should had been there... ", self.rpm)
++            # now pull from SCM
++            rpm_inRepos, rpm_r = self.recipe.fileFinder.fetch(rpm_gitLoc)
++            self.archiveInRepos = rpm_inRepos
++
++            self.archiveInRepos = rpm_inRepos
++            # and put it in right place
++            shutil.move(rpm_r, rpm_c)
++
++            # 'fool' commit cmd so that the src.rpm also appears as a local
++            # file in the lookaside
++            rpm_f = self.recipe.laReposCache.getCachePath(prefix, self.rpm)
++            log.info('** ** %s %s **', rpm_c, rpm_f)
++            # we could probably risk a symlink here...
++            try:
++                os.remove(rpm_f)
++            except:
++                pass
++            shutil.copyfile(rpm_c, rpm_f)
++            # c & paste from extractFromRPM
++            prefix = os.path.sep.join((self.recipe.name, self.rpm))
++            prefix = os.path.normpath(prefix)
++
++            loc = os.path.sep.join(('=RPM_CONTENTS=', prefix))
++            loc = os.path.normpath(loc)
++            c = self.recipe.laReposCache.getCachePath(loc, self.sourcename)
++            util.mkdirChain(os.path.dirname(c))
++            _extractFilesFromRPM(rpm_c, targetfile=c, action=self)
++            sourcename = os.path.sep.join((prefix, self.sourcename))
++            self.archivePath = 'rpm://%s' % os.path.dirname(sourcename)
++
++        else:
++            self.sourcename = self.sourcename
++
++            loc = os.path.sep.join(('=SCM_CONTENTS=', prefix))
++            loc = os.path.normpath(loc)
++            c = self.recipe.laReposCache.getCachePath(loc, self.sourcename)
++            util.mkdirChain(os.path.dirname(c))
++
++            sourcename = os.path.sep.join((prefix, self.sourcename))
++
++            if self.recipe.isExternallyManaged.has_key(self.sourcename):
++                gitLoc = self.recipe.isExternallyManaged[self.sourcename]
++            else:
++                raise SourceError("this should be impossible, "
++                                  "given that we are using github "
++                                  "'%s' should had been there... ", self.sourcename)
++            # now pull from SCM
++            inRepos, r = self.recipe.fileFinder.fetch(gitLoc)
++            self.archiveInRepos = inRepos
++            # and put it in right place
++            shutil.move(r, c)
++            self.archivePath = 'scm://' + os.path.dirname(sourcename)
+ 
+     def doAction(self):
+         self.builddir = self.recipe.macros.builddir
