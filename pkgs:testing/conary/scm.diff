@@ -16,17 +16,16 @@ diff -r 6169c14a91a3 conary/build/recipe.py
 -
 +        
 +        if len(self.isExternallyManaged) > 0: 
-+            log.info('\n:source being pushed from github throu a factory\n')
++            log.info("\n':source' being pushed from github thru a factory\n")
 +            
          for itemName in dir(self):
              if itemName[0] == '_':
                  continue
-@@ -209,7 +213,7 @@
+@@ -209,3 +213,3 @@
          self._logFile = None
          self._isCrossCompileTool = False
          self._isCrossCompiling = False
--
-+            
+
      def _getParentClass(self, className):
          klass = self.__class__
          while klass.__name__ != className:
@@ -43,23 +42,19 @@ diff -r 6169c14a91a3 conary/build/source.py
  
  from conary.lib import debugger, digestlib, log, magic, sha1helper
  from conary import rpmhelper
-@@ -252,7 +255,14 @@
+@@ -252,7 +255,10 @@
      def doPrep(self):
          if self.debug:
              debugger.set_trace()
 -        if self.use:
 +        # if localSources are coming via a factory we download them all
 +        # regardless of them being used or not.
-+        # this fixes cvc refresh when an scm factory is in use
-+        log.info('\n')
-+        log.info('sourceName = %s, [use = %s]', self.sourcename, self.use)
-+        log.info('len = %s', len(self.recipe.isExternallyManaged))
-+        log.info('\n')
++        # this fixes cvc {commit|refresh} when an scm factory is in use
 +        if self.use or len(self.recipe.isExternallyManaged) != 0:
              if self.linenum is None:
                  self._doPrep()
              else:
-@@ -265,7 +275,108 @@
+@@ -265,7 +275,107 @@
  
      def _doPrep(self):
          if self.rpm:
@@ -88,7 +83,6 @@ diff -r 6169c14a91a3 conary/build/source.py
 +            h.endheaders()
 +            if h.getreply()[0] == 200: return True
 +            else: return False
-+
 +
 +        prefix = self.recipe.name 
 +        prefix = os.path.normpath(prefix)
@@ -121,7 +115,7 @@ diff -r 6169c14a91a3 conary/build/source.py
 +            # 'fool' commit cmd so that the src.rpm also appears as a local
 +            # file in the lookaside
 +            rpm_f = self.recipe.laReposCache.getCachePath(prefix, self.rpm)
-+            log.info('** ** %s %s **', rpm_c, rpm_f)
++            # log.info('** ** %s %s **', rpm_c, rpm_f)
 +            # we could probably risk a symlink here...
 +            try:
 +                os.remove(rpm_f)
