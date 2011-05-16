@@ -21,14 +21,6 @@ diff -r 6169c14a91a3 conary/build/recipe.py
          for itemName in dir(self):
              if itemName[0] == '_':
                  continue
-@@ -209,3 +213,3 @@
-         self._logFile = None
-         self._isCrossCompileTool = False
-         self._isCrossCompiling = False
-
-     def _getParentClass(self, className):
-         klass = self.__class__
-         while klass.__name__ != className:
 diff -r 6169c14a91a3 conary/build/source.py
 --- a/conary/build/source.py	Fri May 13 11:27:14 2011 -0400
 +++ b/conary/build/source.py	Mon May 16 10:32:38 2011 +0100
