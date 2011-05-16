@@ -1,6 +1,6 @@
 diff -r 6169c14a91a3 conary/build/recipe.py
 --- a/conary/build/recipe.py	Fri May 13 11:27:14 2011 -0400
-+++ b/conary/build/recipe.py	Fri May 13 21:12:15 2011 +0100
++++ b/conary/build/recipe.py	Mon May 16 10:32:38 2011 +0100
 @@ -110,6 +110,7 @@
      _recipeType = RECIPE_TYPE_UNKNOWN
      _isDerived = False
@@ -32,11 +32,22 @@ diff -r 6169c14a91a3 conary/build/recipe.py
          while klass.__name__ != className:
 diff -r 6169c14a91a3 conary/build/source.py
 --- a/conary/build/source.py	Fri May 13 11:27:14 2011 -0400
-+++ b/conary/build/source.py	Fri May 13 21:12:15 2011 +0100
-@@ -252,6 +252,13 @@
++++ b/conary/build/source.py	Mon May 16 10:32:38 2011 +0100
+@@ -26,6 +26,9 @@
+ import tempfile
+ import stat
+ import httplib
++import time
++from urlparse import urlparse
++from httplib import HTTP 
+ 
+ from conary.lib import debugger, digestlib, log, magic, sha1helper
+ from conary import rpmhelper
+@@ -252,7 +255,14 @@
      def doPrep(self):
          if self.debug:
              debugger.set_trace()
+-        if self.use:
 +        # if localSources are coming via a factory we download them all
 +        # regardless of them being used or not.
 +        # this fixes cvc refresh when an scm factory is in use
@@ -45,10 +56,10 @@ diff -r 6169c14a91a3 conary/build/source.py
 +        log.info('len = %s', len(self.recipe.isExternallyManaged))
 +        log.info('\n')
 +        if self.use or len(self.recipe.isExternallyManaged) != 0:
--        if self.use:
              if self.linenum is None:
                  self._doPrep()
-@@ -265,7 +273,91 @@
+             else:
+@@ -265,7 +275,108 @@
  
      def _doPrep(self):
          if self.rpm:
@@ -70,6 +81,15 @@ diff -r 6169c14a91a3 conary/build/source.py
 +        the one introduced in CNY-2627 that handles files stored
 +        in RPMs
 +        """
++        def checkURL(url):
++            p = urlparse(url)
++            h = HTTP(p[1])
++            h.putrequest('HEAD', p[2])
++            h.endheaders()
++            if h.getreply()[0] == 200: return True
++            else: return False
++
++
 +        prefix = self.recipe.name 
 +        prefix = os.path.normpath(prefix)
 +
@@ -80,7 +100,11 @@ diff -r 6169c14a91a3 conary/build/source.py
 +            util.mkdirChain(os.path.dirname(rpm_c))
 +            rpm_sourcename = os.path.sep.join((prefix, self.rpm))
 +            if self.recipe.isExternallyManaged.has_key(self.rpm):
++                # github doesn' t present immediatly all files in git tree via the web interface. instead it caches them as
++                # they are requested. here we make sure that they are cached in advance
 +                rpm_gitLoc = self.recipe.isExternallyManaged[self.rpm]
++                while checkURL(rpm_gitLoc) == False:
++                    time.sleep(3)
 +            else:
 +                raise SourceError("this should be impossible,"
 +                                  "given that we are using a factory "
@@ -127,7 +151,11 @@ diff -r 6169c14a91a3 conary/build/source.py
 +            sourcename = os.path.sep.join((prefix, self.sourcename))
 +
 +            if self.recipe.isExternallyManaged.has_key(self.sourcename):
++                # github doesn' t present immediatly all files in git tree via the web interface. instead it caches them as
++                # they are requested. here we make sure that they are cached in advance
 +                gitLoc = self.recipe.isExternallyManaged[self.sourcename]
++                while checkURL(gitLoc) == False:
++                    time.sleep(3)
 +            else:
 +                raise SourceError("this should be impossible, "
 +                                  "given that we are using github "
