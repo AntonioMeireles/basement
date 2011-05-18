@@ -74,8 +74,7 @@ class GnomePackageRecipe(CPackageRecipe):
         gnomeExtraConfig += ' --disable-gtk-doc'
 
     def setup(r):
-        # The stub part is to make the factory-github happy on commit of superclass itself
-        if r.__class__.__name__ == 'GnomePackageRecipe' or r.__class__.__name__.endswith('FactoryStub'):
+        if r.__class__.__name__ == 'GnomePackageRecipe':
             return
 
         # this one is subtle. we don't want a pkg that loads GnomePackageRecipe to be a buildReq of itself
