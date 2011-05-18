@@ -1,11 +1,12 @@
 diff -r 6169c14a91a3 conary/build/recipe.py
 --- a/conary/build/recipe.py	Fri May 13 11:27:14 2011 -0400
 +++ b/conary/build/recipe.py	Mon May 16 10:32:38 2011 +0100
-@@ -110,6 +110,7 @@
+@@ -110,6 +110,8 @@
      _recipeType = RECIPE_TYPE_UNKNOWN
      _isDerived = False
      _sourceModule = None
-+    isExternallyManaged = {}
++    isExternallyManaged = False
++    externallyManagedSourceFiles = {}
      COOK_TYPE_LOCAL = 0
      COOK_TYPE_REPOSITORY = 1
  
@@ -15,7 +16,7 @@ diff -r 6169c14a91a3 conary/build/recipe.py
          superClasses = self.__class__.__mro__
 -
 +        
-+        if len(self.isExternallyManaged) > 0: 
++        if self.isExternallyManaged is True: 
 +            log.info("\n':source' being pushed from github thru a factory\n")
 +            
          for itemName in dir(self):
@@ -51,12 +52,12 @@ diff -r 6169c14a91a3 conary/build/source.py
      def _doPrep(self):
          if self.rpm:
 -            self._extractFromRPM()
-+            if len(self.recipe.isExternallyManaged) and self.recipe.isExternallyManaged.has_key(self.rpm):
++            if self.recipe.isExternallyManaged is True and self.recipe.externallyManagedSourceFiles.has_key(self.rpm):
 +                self._extractFromSCM()
 +            else:
 +                self._extractFromRPM()
 +        else:
-+            if len(self.recipe.isExternallyManaged) and self.recipe.isExternallyManaged.has_key(self.sourcename):
++            if self.recipe.isExternallyManaged is True and self.recipe.externallyManagedSourceFiles.has_key(self.sourcename):
 +                self._extractFromSCM()
 +
 +
@@ -85,10 +86,10 @@ diff -r 6169c14a91a3 conary/build/source.py
 +            rpm_c = self.recipe.laReposCache.getCachePath(rpm_loc, self.rpm)
 +            util.mkdirChain(os.path.dirname(rpm_c))
 +            rpm_sourcename = os.path.sep.join((prefix, self.rpm))
-+            if self.recipe.isExternallyManaged.has_key(self.rpm):
++            if self.recipe.externallyManagedSourceFiles.has_key(self.rpm):
 +                # github doesn' t present immediatly all files in git tree via the web interface. instead it caches them as
 +                # they are requested. here we make sure that they are cached in advance
-+                rpm_gitLoc = self.recipe.isExternallyManaged[self.rpm]
++                rpm_gitLoc = self.recipe.externallyManagedSourceFiles[self.rpm]
 +                while checkURL(rpm_gitLoc) == False:
 +                    time.sleep(3)
 +            else:
@@ -136,10 +137,10 @@ diff -r 6169c14a91a3 conary/build/source.py
 +
 +            sourcename = os.path.sep.join((prefix, self.sourcename))
 +
-+            if self.recipe.isExternallyManaged.has_key(self.sourcename):
++            if self.recipe.externallyManagedSourceFiles.has_key(self.sourcename):
 +                # github doesn' t present immediatly all files in git tree via the web interface. instead it caches them as
 +                # they are requested. here we make sure that they are cached in advance
-+                gitLoc = self.recipe.isExternallyManaged[self.sourcename]
++                gitLoc = self.recipe.externallyManagedSourceFiles[self.sourcename]
 +                while checkURL(gitLoc) == False:
 +                    time.sleep(3)
 +            else:
