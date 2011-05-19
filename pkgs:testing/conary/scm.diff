@@ -43,7 +43,7 @@ diff -r 6169c14a91a3 conary/build/source.py
 +        # if localSources are coming via a factory we download them all
 +        # regardless of them being used or not.
 +        # this fixes cvc {commit|refresh} when an scm factory is in use
-+        if self.use or len(self.recipe.isExternallyManaged) != 0:
++        if self.use or self.recipe.isExternallyManaged is True:
              if self.linenum is None:
                  self._doPrep()
              else:
