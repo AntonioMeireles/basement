@@ -18,7 +18,7 @@ class Conary(CPackageRecipe, Python.VersionMixIn):
                       'libelf-lgpl:devel', 'pycrypto:python',
                       'openssl:devel', 'zlib:devel', 'python:bin',
                       'elementtree:python', 'kid:python', 'm2crypto:python',
-                      'perl:runtime',
+                      'perl:runtime', 'kid:runtime'
                     ]
     def setup(r):
         r.setDefaultPython()
